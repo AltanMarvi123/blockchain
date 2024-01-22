@@ -2,6 +2,8 @@
 
 # Import Libraries
 
+# I am writing sick code 
+
 import datetime
 import hashlib
 import json
@@ -16,7 +18,7 @@ class Blockchain:
         self.chain = []
         self.create_block(proof = 1, previous_hash = '0')
         self.difficulty = 1
-        self.hash_operation = 0
+        self.hash_operation = ''
         
     def create_block(self, proof, previous_hash): 
         block = {'index': len(self.chain) + 1,
@@ -76,11 +78,11 @@ blockchain = Blockchain()
 # Mine a new block
 @app.route('/mine_block', methods = ['GET'])
 def mine_block():
+    start_time = time.time() # Record the start time
     previous_block = blockchain.get_previous_block()
     previous_proof = previous_block['proof']
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
-    start_time = time.time() # Record the start time
     block = blockchain.create_block(proof, previous_hash)
     end_time = time.time()  # Record the end time
     time_taken = end_time - start_time
@@ -89,7 +91,7 @@ def mine_block():
                 'timestamp': block['timestamp'],
                 'proof': block['proof'],
                 'previous_hash': block['previous_hash'],
-                'self.hash_operation': block['self.hash_operation'],
+                'hash_operation': blockchain.hash_operation,
                 'time_taken': time_taken}
     return jsonify(response), 200
 
@@ -108,11 +110,3 @@ def confirm_chain():
 
 # Run app
 app.run(host = '0.0.0.0', port = 5001)
-    
-
-
-
-
-
-
-
