@@ -1,3 +1,4 @@
+#from flask import Flask, render_template, request, session
 import datetime
 import hashlib
 import json
@@ -9,11 +10,39 @@ import argparse
 
 
 class Blockchain:
+    
+
+    #initializing user balances and creating a getter method, increasing method, and a decreasing method for each user
+    def get_user_1_balance(self):
+        return self.user_1_balance
+    def increase_user_1_balance(self, amount):
+        self.user_1_balance += amount
+    def decrease_user_1_balance(self, amount):
+        self.user_1_balance -= amount
+    
+    def get_user_2_balance(self):
+        return self.user_2_balance
+    def increase_user_2_balance(self, amount):
+        self.user_2_balance += amount
+    def decrease_user_2_balance(self, amount):
+        self.user_2_balance -= amount
+    
+    def get_user_3_balance(self):
+        return self.user_3_balance
+    def increase_user_3_balance(self, amount):
+        self.user_3_balance += amount
+    def decrease_user_3_balance(self, amount):
+        self.user_3_balance -= amount
+    
+
     def __init__(self):
         self.chain = []
         self.transactions = []
         self.create_block(proof=1, previous_hash='0')
         self.nodes = set()
+        self.user_1_balance = 100
+        self.user_2_balance = 100
+        self.user_3_balance = 100
 
     def create_block(self, proof, previous_hash):
         block = {'index': len(self.chain) + 1,
@@ -92,8 +121,9 @@ class Blockchain:
 
 # Creating a Web App
 app = Flask(__name__)
+#url = 'http://localhost:5000'
 
-# Creating an address for the node on Port 5000
+# Creating an address for the node on Port 4050
 node_address = str(uuid4()).replace('-', '')
 
 # Creating a Blockchain
@@ -108,14 +138,37 @@ def mine_block():
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
     blockchain.add_transaction(
-        sender=node_address, receiver='monty', amount=1)
+        sender=node_address, receiver='user1', amount=1)
     block = blockchain.create_block(proof, previous_hash)
+
+
     response = {'message': 'Congratulations, you just mined a block!',
                 'index': block['index'],
                 'timestamp': block['timestamp'],
                 'proof': block['proof'],
                 'previous_hash': block['previous_hash'],
                 'transactions': block['transactions']}
+    
+    #NEW CODE: calculate everybody's balance by looping through the list of transactions
+    all_transactions = []
+    for block in blockchain.chain:
+        all_transactions.extend(block['transactions'])
+
+    for transaction in all_transactions:
+        if transaction["receiver"] == "user1":
+            blockchain.user_1_balance += transaction["amount"]
+        elif transaction["receiver"] == "user2":
+            blockchain.user_2_balance += transaction["amount"]
+        elif transaction["receiver"] == "user3":
+            blockchain.user_3_balance += transaction["amount"]
+
+        if transaction["sender"] == "user1":
+            blockchain.user_1_balance -= transaction["amount"]
+        elif transaction["sender"] == "user2":
+            blockchain.user_2_balance -= transaction["amount"]
+        elif transaction["sender"] == "user3":
+            blockchain.user_3_balance -= transaction["amount"]
+
     return jsonify(response), 200
 
 
@@ -143,9 +196,49 @@ def is_valid():
 # Adding a new transaction to the Blockchain
 def add_transaction():
     json = request.get_json()
+    print(json)
     transaction_keys = ['sender', 'receiver', 'amount']
     if not all(key in json for key in transaction_keys):
         return 'Some elements of the transaction are missing', 400
+    
+    #are the sender and receiver valid?
+    if(json['sender'] != "user1" and json['sender'] != "user2" and json['sender'] != "user3"):
+        return 'Invalid sender'
+    if(json['receiver'] != "user1" and json['receiver'] != "user2" and json['receiver'] != "user3"):
+        return 'Invalid receiver'
+
+    #does the sender have enough balance?
+    user_1_value = blockchain.get_user_1_balance()
+    user_2_value = blockchain.get_user_2_balance()
+    user_3_value = blockchain.get_user_3_balance()
+
+    if(json['sender'] == "user1"):
+        if(user_1_value < json['amount']):
+            return 'user1 does not have enough balance'
+    elif(json['sender'] == "user2"):
+        if(user_2_value < json['amount']):
+            return 'user2 does not have enough balance'
+    elif(json['sender'] == "user3"):
+        if(user_3_value < json['amount']):
+            return 'user3 does not have enough balance'
+    
+    #take money from the sender
+    if(json['sender'] == "user1"):
+        blockchain.decrease_user_1_balance(json['amount'])
+    elif(json['sender'] == "user2"):
+        blockchain.decrease_user_2_balance(json['amount'])
+    elif(json['sender'] == "user3"):
+        blockchain.decrease_user_3_balance(json['amount'])
+
+    #give money to the receiver
+    if(json['receiver'] == "user1"):
+        blockchain.increase_user_1_balance(json['amount'])
+    elif(json['receiver'] == "user2"):
+        blockchain.increase_user_2_balance(json['amount'])
+    elif(json['receiver'] == "user3"):
+        blockchain.increase_user_3_balance(json['amount'])
+
+
     index = blockchain.add_transaction(
         json['sender'], json['receiver'], json['amount'])
     response = {'message': f'This transaction will be added to Block {index}'}
@@ -180,7 +273,7 @@ def replace_chain():
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--port', type=int, default=5000, help='port to listen on')
+parser.add_argument('--port', type=int, default=4050, help='port to listen on')
 args = parser.parse_args()
 
 # Running the app

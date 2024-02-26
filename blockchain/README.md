@@ -1,39 +1,56 @@
-# Blockchain Spring 2024
+# Basic Blockchain
 
-### HI EVERBODY
+This is a basic implementation of a blockchain in Python using Flask.
 
-## Blockchain
+## Endpoints
 
-### Endpoint Collections
-  - [Basic Blockchain](https://nobles-blockchain.postman.co/workspace/New-Team-Workspace~6ee04c91-09b2-4066-a420-2d5e83667e0d/collection/24854847-a4059b9c-1111-4056-82e7-6c845caf1603?action=share&creator=24854847)
-  - [Basic Blockchain Expanded](https://nobles-blockchain.postman.co/workspace/New-Team-Workspace~6ee04c91-09b2-4066-a420-2d5e83667e0d/collection/24854847-852421c2-4abb-4502-a0cf-e8117949fb49?action=share&creator=24854847)
+### `GET /mine_block`
 
-### Running the Project
-1. To run the application, use the following command: ```python basic_blockchain_expanded.py```. The application will start a Flask server on http://127.0.0.1:5000.
-## Cryptocurrency
+Mines a new block and adds it to the blockchain. Returns the new block as a JSON object.
 
-MontyCoin is a simple implementation of a blockchain and cryptocurrency.
+### `GET /get_chain`
 
-### Endpoint Collections
-  - [Cryptocurrency](https://nobles-blockchain.postman.co/workspace/New-Team-Workspace~6ee04c91-09b2-4066-a420-2d5e83667e0d/collection/24854847-5aaeccc5-c743-4bf6-a1a2-5f3ec30ad654?action=share&creator=24854847)
-  - [Transaction Picker](https://nobles-blockchain.postman.co/workspace/Blockchain~6ee04c91-09b2-4066-a420-2d5e83667e0d/collection/31591599-4b3fe1aa-9f86-41a1-9705-ac6bd2beabe5?action=share&creator=24854847)
+Returns the entire blockchain as a list of blocks, along with the length of the chain.
 
-### Running the Project
-1. Navigate to scripts directory
-2. Run ```chmod +x run.sh``` and ```chmod +x stop.sh``` to make scripts executable
-3. Run the servers (nodes) with ```./run.sh```. This will start 4 nodes on http://127.0.0.1:5000 - http://127.0.0.1:5003
-4. Stop the nodes with  ```./stop.sh```
+### `GET /confirm_chain`
 
-### Project Improvements
-1. **Transaction Validation**:  Implement a system to validate transactions before they are added to the blockchain. This could include checking if the sender has enough balance to perform the transaction.
-2. **Wallets**: Create a Wallet class that generates private and public keys for users. The private key can be used to sign transactions and the public key can be used as the user's address.
-3. **Transaction Signing and Verification**: Implement a system where transactions are signed using the sender's private key and can be verified by others using the sender's public key. This ensures that only the owner of a wallet can make transactions from it.
-4. **Improved Mining Process**: Modify the mining process. For example, you could implement a difficulty adjustment algorithm that adjusts the difficulty of the mining process based on the total computational power of the network.
-5. **Custom Hashing Algorithm**: Implement a custom hashing algorithm for the blockchain. This could be a great way to learn about cryptographic hash functions.
-6. **Peer-to-Peer Network**: Instead of manually adding nodes, implement a peer-to-peer network where nodes can discover each other.
-7. **GUI**: Create a graphical user interface (GUI) for easier interaction with the blockchain.
-8. **Error Handling**: Improve error handling and return appropriate HTTP status codes and messages when errors occur.
-9. **Data Persistence**: Implement a system to store the blockchain data persistently.
-10.** Reward System**: Implement a reward system for miners.
+Validates the blockchain and returns a JSON object indicating whether the chain is valid.
 
-### Smart Contracts
+### `POST /add_transaction`
+
+Adds a new transaction to the transaction pool. The transaction should be provided as a JSON object in the request body with the following format:
+
+```json
+{
+    "sender": "sender username",
+    "receiver": "receiver username",
+    "amount": amount
+}
+```
+Returns a JSON object indicating whether the transaction was successfully added to the pool.
+
+### GET /get_transactions
+Returns a JSON object containing the current transaction pool and the list of completed transactions.
+
+### GET /get_users
+Returns a JSON object containing all users.
+
+### GET /get_user_balances
+Returns a JSON object containing the balance of each user.
+
+### POST /create_user
+Creates a new user. The username should be provided as a JSON object in the request body with the following format:
+
+```json
+{
+    "name": "username"
+}
+```
+Returns a JSON object indicating the status of the new user.
+
+### Running the Application
+To run the application, use the following command:
+```bash
+python basic_blockchain_expanded.py
+```
+The application will start a Flask server on http://127.0.0.1:5000.
